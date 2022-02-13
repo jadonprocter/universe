@@ -1,0 +1,32 @@
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+#points {
+  position: absolute;
+  top: 30px;
+  width: 100%;
+  text-align: center;
+  z-index: 100;
+  display: block;
+  color: azure;
+  /* padding-top: 20px; */
+}
+
+#instructionsBtn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: azure;
+  background: #8c8c8c;
+}
+
+#instructions {
+  position: absolute;
+  align-self: center;
+  text-align: left;
+  color: azure;
+  background: #8c8c8c;
+}
