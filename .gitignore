@@ -2,6 +2,8 @@ server/.env
 server/test.rest
 server/node_modules
 
+zarchive/
+
 universe/node_modules
 # Logs
 logs
