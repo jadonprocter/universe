@@ -30,3 +30,11 @@ canvas {
   color: azure;
   background: #8c8c8c;
 }
+
+#loadPlanetNames {
+  position: absolute;
+  align-self: center;
+  text-align: left;
+  color: azure;
+  background: #8c8c8c;
+}

@@ -3,9 +3,9 @@ import "./style.css";
 // import THREE and the controls for moving in the 3D scene
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls.js";
-// import { Raycaster } from "three/src/core/Raycaster.js";
-// import {pointers } from ""
-
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+// import fs from "fs";
 let points = 0;
 
 /**
@@ -49,6 +49,72 @@ flyControls.dragToLook = false;
  * FUNCTIONS TO ADD THINGS TO THE SCENE
  */
 
+////////////////////////////////////////////////////////////////////////
+/**
+ * FILE SYSTEM HANDLING
+ * https://www.youtube.com/watch?v=8EcBJV0sOSU
+ */
+let fileHandle;
+
+// async function save() {
+//   let stream = await fileHandle.createWritable();
+//   await stream.write("run");
+//   await stream.close();
+// }
+let name = "";
+async function loadName() {
+  // open file picker
+  try {
+    [fileHandle] = await window.showOpenFilePicker();
+
+    let fileData = await fileHandle.getFile();
+    let text = await fileData.text();
+    console.log(text);
+    name = text.toString();
+
+    let stream = await fileHandle.createWritable();
+    await stream.write("run");
+    await stream.close();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
+
+// set up text loader for 3d words
+const addText = async (text, x, y, z) => {
+  // get random planet name from microservice
+  // const t = await loadName();
+  const loader = new FontLoader();
+  loader.load(
+    "./node_modules/three/examples/fonts/droid/droid_sans_bold.typeface.json",
+    function (font) {
+      const geometryText = new TextGeometry(text, {
+        font: font,
+        size: 30,
+        height: 5,
+        curveSegments: 8,
+        bevelEnabled: false,
+        // bevelThickness: 10,
+        // bevelSize: 8,
+        // bevelOffset: 0,
+        // bevelSegments: 5,
+      });
+      const materials = [
+        new THREE.MeshPhongMaterial({ color: 0xfff }),
+        new THREE.MeshPhongMaterial({ color: 0x3af }),
+      ];
+      const meshText = new THREE.Mesh(geometryText, materials);
+      console.log(meshText);
+      meshText.position.x = x + 5;
+      meshText.position.y = y;
+      meshText.position.z = z;
+      scene.add(meshText);
+    }
+  );
+};
+addText();
 // add planets
 
 async function addPlanet(meshColor) {
@@ -78,6 +144,15 @@ Array(5)
   .forEach(() => {
     addPlanet("orange.png");
   });
+
+async function generatePlanet() {
+  // const p = await addPlanet("blue.png");
+  // await addText(name, p.position.x, p.position.y, p.position.z);
+  const [x, y, z] = Array(3)
+    .fill()
+    .map(() => THREE.MathUtils.randFloatSpread(300));
+  await addText(name, x, y, z);
+}
 
 // add stars
 function addStar() {
@@ -134,14 +209,16 @@ function handlePoints() {
   //   "generate"
   // ).innerHTML = `<btn id='planetBtn' onClick=${addPlanet}>Generate a Planet</btn>`;
   points = 0;
-  const posArr = addPlanet("purple.png");
-  camera.lookAt(posArr[0], posArr[1], posArr[2]);
+  // const posArr = addPlanet("purple.png");
+  document.getElementById("genPlanet").innerHTML =
+    "<button id='loadPlanetNames'>Generate Text</button>";
+  // camera.lookAt(posArr[0], posArr[1], posArr[2]);
 }
 
 /**
  * ACTIVATE ANIMATION LOOP
  */
-
+camera.lookAt(0, 0, 0);
 function animate() {
   const torusTracker = scene.children.filter((obj) => {
     if (obj.name === "torus") {
@@ -161,10 +238,10 @@ function animate() {
   // console.log(intersects);
   for (let i = 0; i < intersects.length; i++) {
     const n = intersects[i].object.uuid;
-    console.log(n);
+    // console.log(n);
     scene.remove(scene.getObjectByProperty("uuid", n));
     points++;
-    console.log(points);
+    // console.log(points);
   }
 
   document.getElementById("instructionsBtn").addEventListener("click", () => {
@@ -172,8 +249,8 @@ function animate() {
       document.getElementById("instructions").innerHTML =
         "<h2>INSTRUCTIONS:</h2>\
       <p>The Object of the game is to collect as many Pink Donuts as you can.</p>\
-      <p>Once you collect 5 Pink Donuts Then a world will appear.</p>\
-      <p>See how many worlds you can create.</p> \
+      <p>Once you collect 5 Pink Donuts Text will appear.</p>\
+      <p>See how many Texts you can create.</p> \
       <p>Use the mouse to move your view and the left and right mouse buttons to zoom in and out.</p>\
       <h3>Advanced Uses:</h3> \
       <p>Use the w, a, s, d keys to move around the universe</p>";
@@ -187,6 +264,14 @@ function animate() {
 
   document.getElementById("points").innerHTML = `points: ${points}`;
 
+  if (document.getElementById("loadPlanetNames")) {
+    document.getElementById("genPlanet").addEventListener("click", async () => {
+      await loadName();
+      await generatePlanet();
+    });
+    // document.getElementById("loadPlanetNames").innerHTML = "";
+  }
+
   renderer.render(scene, camera);
   if (points >= 5) {
     handlePoints();
@@ -194,4 +279,4 @@ function animate() {
 }
 
 animate();
-console.log(scene);
+// console.log(scene);

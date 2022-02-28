@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "axios": "^0.26.0",
+    "browserfs": "^1.4.3",
     "dotenv": "^16.0.0",
     "three": "^0.137.5"
   }
