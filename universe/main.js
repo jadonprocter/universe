@@ -12,13 +12,8 @@ let points = 0;
  * https://www.youtube.com/watch?v=8EcBJV0sOSU
  */
 let fileHandle;
-
-// async function save() {
-//   let stream = await fileHandle.createWritable();
-//   await stream.write("run");
-//   await stream.close();
-// }
 let name = "";
+
 async function loadName() {
   // open file picker
   try {
