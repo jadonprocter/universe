@@ -1,12 +1,43 @@
 import "./style.css";
-
-// import THREE and the controls for moving in the 3D scene
 import * as THREE from "three";
 import { FlyControls } from "three/examples/jsm/controls/FlyControls.js";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-// import fs from "fs";
+
 let points = 0;
+
+////////////////////////////////////////////////////////////////////////
+/**
+ * FILE SYSTEM HANDLING
+ * https://www.youtube.com/watch?v=8EcBJV0sOSU
+ */
+let fileHandle;
+
+// async function save() {
+//   let stream = await fileHandle.createWritable();
+//   await stream.write("run");
+//   await stream.close();
+// }
+let name = "";
+async function loadName() {
+  // open file picker
+  try {
+    [fileHandle] = await window.showOpenFilePicker();
+
+    let fileData = await fileHandle.getFile();
+    let text = await fileData.text();
+    console.log(text);
+    name = text.toString();
+
+    let stream = await fileHandle.createWritable();
+    await stream.write("run");
+    await stream.close();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
 
 /**
  * SET UP THE SCENE
@@ -49,39 +80,6 @@ flyControls.dragToLook = false;
  * FUNCTIONS TO ADD THINGS TO THE SCENE
  */
 
-////////////////////////////////////////////////////////////////////////
-/**
- * FILE SYSTEM HANDLING
- * https://www.youtube.com/watch?v=8EcBJV0sOSU
- */
-let fileHandle;
-
-// async function save() {
-//   let stream = await fileHandle.createWritable();
-//   await stream.write("run");
-//   await stream.close();
-// }
-let name = "";
-async function loadName() {
-  // open file picker
-  try {
-    [fileHandle] = await window.showOpenFilePicker();
-
-    let fileData = await fileHandle.getFile();
-    let text = await fileData.text();
-    console.log(text);
-    name = text.toString();
-
-    let stream = await fileHandle.createWritable();
-    await stream.write("run");
-    await stream.close();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////
-
 // set up text loader for 3d words
 const addText = async (text, x, y, z) => {
   // get random planet name from microservice
@@ -115,8 +113,8 @@ const addText = async (text, x, y, z) => {
   );
 };
 addText();
-// add planets
 
+// add planets
 async function addPlanet(meshColor) {
   const planetTexture = new THREE.TextureLoader().load(
     `../meshes/${meshColor}`
@@ -146,8 +144,6 @@ Array(5)
   });
 
 async function generatePlanet() {
-  // const p = await addPlanet("blue.png");
-  // await addText(name, p.position.x, p.position.y, p.position.z);
   const [x, y, z] = Array(3)
     .fill()
     .map(() => THREE.MathUtils.randFloatSpread(300));
@@ -205,14 +201,10 @@ function onPointerMove(event) {
  */
 
 function handlePoints() {
-  // document.getElementById(
-  //   "generate"
-  // ).innerHTML = `<btn id='planetBtn' onClick=${addPlanet}>Generate a Planet</btn>`;
   points = 0;
-  // const posArr = addPlanet("purple.png");
+
   document.getElementById("genPlanet").innerHTML =
     "<button id='loadPlanetNames'>Generate Text</button>";
-  // camera.lookAt(posArr[0], posArr[1], posArr[2]);
 }
 
 /**
@@ -220,30 +212,30 @@ function handlePoints() {
  */
 camera.lookAt(0, 0, 0);
 function animate() {
+  // track the amount of toruses
   const torusTracker = scene.children.filter((obj) => {
     if (obj.name === "torus") {
       return obj;
     }
   });
-  // console.log(torusTracker);
+
+  // track the mouse position
   window.addEventListener("pointermove", onPointerMove);
   requestAnimationFrame(animate);
   flyControls.update(0.01);
 
-  // update the picking ray with the camera and pointer position
   raycaster.setFromCamera(pointer, camera);
 
-  // calculate objects intersecting the picking ray
   const intersects = raycaster.intersectObjects(torusTracker);
-  // console.log(intersects);
+
+  // see if mouse hovered on a torus
   for (let i = 0; i < intersects.length; i++) {
     const n = intersects[i].object.uuid;
-    // console.log(n);
     scene.remove(scene.getObjectByProperty("uuid", n));
     points++;
-    // console.log(points);
   }
 
+  // add instructions for user
   document.getElementById("instructionsBtn").addEventListener("click", () => {
     if (document.getElementById("instructions").innerHTML === "") {
       document.getElementById("instructions").innerHTML =
@@ -262,6 +254,7 @@ function animate() {
     }
   });
 
+  // display points
   document.getElementById("points").innerHTML = `points: ${points}`;
 
   if (document.getElementById("loadPlanetNames")) {
@@ -272,6 +265,7 @@ function animate() {
     // document.getElementById("loadPlanetNames").innerHTML = "";
   }
 
+  // render
   renderer.render(scene, camera);
   if (points >= 5) {
     handlePoints();
@@ -279,4 +273,3 @@ function animate() {
 }
 
 animate();
-// console.log(scene);
